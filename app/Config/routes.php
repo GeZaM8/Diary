@@ -1,19 +1,31 @@
 <?php
 $routes = [];
 
-function route($method, $path, $controller, $action)
+function route($method, $path, $controller, $action, $middleware = null)
 {
     global $routes;
-    $routes[$method][$path] = [$controller, $action];
+    $routes[$method][$path] = [$controller, $action, $middleware];
+}
+
+function group($middleware, $routesList)
+{
+    foreach ($routesList as $route) {
+        route($route[0], $route[1], $route[2], $route[3], $middleware);
+    }
 }
 
 // routes
-route('GET', 'login', 'Controllers\AuthController', 'login');
-route('GET', 'register', 'Controllers\AuthController', 'register');
-route('POST', 'login', 'Controllers\UserController', 'login');
-route('POST', 'register', 'Controllers\UserController', 'register');
+group('guestFilter', [
+    ['GET', 'login', 'Controllers\AuthController', 'login'],
+    ['GET', 'register', 'Controllers\AuthController', 'register'],
+    ['POST', 'login', 'Controllers\UserController', 'login'],
+    ['POST', 'register', 'Controllers\UserController', 'register'],
+]);
 
-route('GET', '', 'Controllers\NoteController', 'index');
-route('POST', 'note/add', 'Controllers\NoteController', 'add');
-route('POST', 'note/update', 'Controllers\NoteController', 'update');
-route('POST', 'note/delete', 'Controllers\NoteController', 'delete');
+// Routes untuk user yang sudah login
+group('authFilter', [
+    ['GET', '', 'Controllers\NoteController', 'index'],
+    ['POST', 'note/add', 'Controllers\NoteController', 'add'],
+    ['POST', 'note/update', 'Controllers\NoteController', 'update'],
+    ['POST', 'note/delete', 'Controllers\NoteController', 'delete'],
+]);

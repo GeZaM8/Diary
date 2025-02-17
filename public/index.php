@@ -4,9 +4,12 @@ require "../app/Config/bootstrap.php";
 $uri = trim($_SERVER['REQUEST_URI'], '/');
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Check if the route exists
 if (isset($routes[$method][$uri])) {
-    [$controller, $action] = $routes[$method][$uri];
+    [$controller, $action, $middleware] = $routes[$method][$uri];
+
+    if ($middleware && function_exists($middleware)) {
+        $middleware();
+    }
 
     if (class_exists($controller) && method_exists($controller, $action)) {
         $controllerInstance = new $controller();
